@@ -1,15 +1,15 @@
-local Fatality = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/Fatality/refs/heads/main/src/source.luau"))();
-local Notification = Fatality:CreateNotifier();
+local Fatality = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/Fatality/refs/heads/main/src/source.luau"))()
+local Notification = Fatality:CreateNotifier()
 
 Fatality:Loader({
     Name = "FATALITY",
     Duration = 4,
     Scale = 3
-});
+})
 
 Notification:Notify({
     Title = "FATALITY",
-    Content = "Hello, "..game.Players.LocalPlayer.Name..' Welcome back!',
+    Content = "Hello, " .. game.Players.LocalPlayer.Name .. " Welcome back!",
     Icon = "clipboard"
 })
 
@@ -17,8 +17,8 @@ local Window = Fatality.new({
     Name = "FATALITY",
     Expire = "1488 days",
     Keybind = "Delete"
-});
--- ==================== Вкладки ====================
+})
+
 local RageTab = Window:AddMenu({
     Name = "RAGE",
     Icon = "target"
@@ -38,7 +38,7 @@ local LuaTab = Window:AddMenu({
     Name = "LUA",
     Icon = "code"
 })
--- ==================== Сервисы Roblox ====================
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -48,11 +48,6 @@ local TextService = game:GetService("TextService")
 local Lighting = game:GetService("Lighting")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
--- ==================== AIM ====================
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
 local aimlockEnabled = false
 local activationKey = Enum.KeyCode.Z
@@ -60,21 +55,17 @@ local currentTarget = nil
 local locked = false
 local highlight = nil
 
--- Настройки Aimlock
 local predictionEnabled = false
 local predictionStrength = 0.2
 local highlightEnabled = true
 local highlightColor = Color3.fromRGB(255, 255, 255)
-local aimPriority = "Crosshair" -- Crosshair, Distance
+local aimPriority = "Crosshair"
 
--- Проверки
 local aimTeamCheck = false
 local aimDownedCheck = false
 
--- Подключения для очистки
 local connections = {}
 
--- Поиск цели с учетом выбранного приоритета (Безопасный, без зависаний)
 local function findTarget()
     local camera = Workspace.CurrentCamera or workspace.CurrentCamera
     if not camera then return nil end
@@ -91,13 +82,11 @@ local function findTarget()
     
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= localPlayer and p.Character and p.Character:FindFirstChild("Head") then
-            -- Team Check
             if aimTeamCheck and p.Team == localPlayer.Team then continue end
             
             local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
             if not humanoid or humanoid.Health <= 0 then continue end
             
-            -- Downed Check
             if aimDownedCheck then
                 if humanoid:GetState() == Enum.HumanoidStateType.Dead or humanoid:GetState() == Enum.HumanoidStateType.Physics then
                     continue
@@ -111,12 +100,9 @@ local function findTarget()
                 local targetRoot = p.Character:FindFirstChild("HumanoidRootPart")
                 local currentValue = math.huge
                 
-                -- ОПРЕДЕЛЕНИЕ ПРИОРИТЕТА
                 if aimPriority == "Crosshair" then
-                    -- Ближе всего к центру экрана (курсору)
                     currentValue = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
                 elseif aimPriority == "Distance" then
-                    -- Ближе всего к самому игроку в 3D пространстве
                     if myRoot and targetRoot then
                         currentValue = (myRoot.Position - targetRoot.Position).Magnitude
                     end
@@ -148,7 +134,6 @@ local function updateHighlight(targetChar)
     end
 end
 
--- Обработка ввода для Aimlock (активация по клавише)
 local inputBegan = nil
 local function setupInput()
     if inputBegan then 
@@ -178,7 +163,6 @@ local function setupInput()
 end
 setupInput()
 
--- Основной цикл Aimlock
 local renderStepped = RunService.RenderStepped:Connect(function()
     if aimlockEnabled and locked then
         local targetValid = false
@@ -193,7 +177,6 @@ local renderStepped = RunService.RenderStepped:Connect(function()
             end
         end
 
-        -- Автоматический поиск новой цели, если старая пропала или умерла
         if not targetValid then
             local newChar = findTarget()
             if newChar then
@@ -223,7 +206,6 @@ local renderStepped = RunService.RenderStepped:Connect(function()
 end)
 table.insert(connections, renderStepped)
 
--- Функция для выгрузки
 local function unloadAIM()
     for _, conn in pairs(connections) do
         pcall(function() conn:Disconnect() end)
@@ -238,13 +220,11 @@ local function unloadAIM()
     currentTarget = nil
 end
 
--- ==================== UI ====================
 local aimSection = RageTab:AddSection({
     Name = "AIM",
     Position = 'left'
 })
 
--- Aimlock тумблер
 local aimToggle = aimSection:AddToggle({
     Name = "Aimlock",
     Default = false,
@@ -259,7 +239,6 @@ local aimToggle = aimSection:AddToggle({
     end
 })
 
--- Старый бинд на месте
 aimToggle.Option:AddKeybind({
     Name = "Aimlock Key",
     Default = "Z",
@@ -269,7 +248,6 @@ aimToggle.Option:AddKeybind({
     end
 })
 
--- Проверки
 aimToggle.Option:AddToggle({
     Name = "Team Check",
     Default = false,
@@ -282,7 +260,6 @@ aimToggle.Option:AddToggle({
     Callback = function(val) aimDownedCheck = val end
 })
 
--- Выпадающий список приоритетов в самом низу меню опций аимлока
 aimToggle.Option:AddDropdown({
     Name = "Target Priority",
     Values = {"Crosshair", "Distance"},
@@ -292,7 +269,6 @@ aimToggle.Option:AddDropdown({
     end
 })
 
--- Prediction тумблер
 local predToggle = aimSection:AddToggle({
     Name = "Prediction",
     Default = false,
@@ -309,7 +285,6 @@ predToggle.Option:AddSlider({
     Callback = function(val) predictionStrength = val / 500 end
 })
 
--- Highlight тумблер
 local highlightToggle = aimSection:AddToggle({
     Name = "Highlight",
     Default = true,
@@ -330,27 +305,16 @@ highlightToggle.Option:AddColorPicker({
 })
 
 _G.unloadAIM = unloadAIM
--- ==================== ANTI-AIM ====================
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
 local antiAimEnabled = false
 local currentMode = "static"
 local spinSpeed = 360
 local yawEnabled = false
 local yawAngle = 0
-local pitchEnabled = true 
-local pitchAngle = 0      
-local antiAimDownedCheck = true 
-local atTargetFallbackAngle = 0 
+local atTargetFallbackAngle = 0
 
--- Коннекты разделены для физики и анимаций
 local antiAimRenderConn = nil
-local antiAimSteppedConn = nil
 
--- Настройки YAW Jitter
 local yawJitterEnabled = false
 local yawJitterMode = "Center"
 local yawJitterRange = 30
@@ -359,16 +323,6 @@ local yawJitterAccum = 0
 local yawJitterOffset = 0
 local way3IndexYaw = 0
 local way5IndexYaw = 0
-
--- Настройки PITCH Jitter
-local pitchJitterEnabled = false
-local pitchJitterMode = "Center"
-local pitchJitterRange = 30
-local pitchJitterInterval = 0
-local pitchJitterAccum = 0
-local pitchJitterOffset = 0
-local way3IndexPitch = 0
-local way5IndexPitch = 0
 
 local function getClosestPlayer(maxDist)
     local LocalPlayer = Players.LocalPlayer
@@ -388,12 +342,6 @@ local function getClosestPlayer(maxDist)
                 local humanoid = targetChar:FindFirstChildOfClass("Humanoid")
                 if not humanoid or humanoid.Health <= 0 then continue end
                 
-                if antiAimDownedCheck then
-                    if humanoid:GetState() == Enum.HumanoidStateType.Dead or humanoid:GetState() == Enum.HumanoidStateType.Physics then
-                        continue
-                    end
-                end
-
                 local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
                 if targetRoot then
                     local dist = (myPos - targetRoot.Position).Magnitude
@@ -412,7 +360,6 @@ local function updateAntiAimMode(newMode)
     currentMode = newMode
 end
 
--- ==================== 1. ЛОГИКА YAW (Вращение RootPart - Видят все) ====================
 local function antiAimMain(dt)
     if not antiAimEnabled then return end
 
@@ -459,7 +406,6 @@ local function antiAimMain(dt)
         end
     end
 
-    -- Подсчет Yaw Jitter
     if yawJitterEnabled then
         local applyJitter = false
         if yawJitterInterval > 0 then
@@ -495,117 +441,31 @@ local function antiAimMain(dt)
         yawJitterOffset = 0
     end
 
-    -- Подсчет Pitch Jitter (Для применения в следующем блоке)
-    if pitchJitterEnabled then
-        local applyJitter = false
-        if pitchJitterInterval > 0 then
-            pitchJitterAccum = pitchJitterAccum + dt
-            if pitchJitterAccum >= pitchJitterInterval then
-                pitchJitterAccum = 0
-                applyJitter = true
-            end
-        else
-            applyJitter = true
-        end
-        
-        if applyJitter then
-            if pitchJitterMode == "Center" then
-                pitchJitterOffset = (math.random() * 2 - 1) * pitchJitterRange
-            elseif pitchJitterMode == "Random" then
-                pitchJitterOffset = (math.random() * 2 - 1) * 90
-            elseif pitchJitterMode == "3-way" then
-                way3IndexPitch = (way3IndexPitch + 1) % 3
-                if way3IndexPitch == 0 then pitchJitterOffset = -pitchJitterRange
-                elseif way3IndexPitch == 1 then pitchJitterOffset = 0
-                else pitchJitterOffset = pitchJitterRange end
-            elseif pitchJitterMode == "5-way" then
-                way5IndexPitch = (way5IndexPitch + 1) % 5
-                if way5IndexPitch == 0 then pitchJitterOffset = -pitchJitterRange
-                elseif way5IndexPitch == 1 then pitchJitterOffset = -pitchJitterRange / 2
-                elseif way5IndexPitch == 2 then pitchJitterOffset = 0
-                elseif way5IndexPitch == 3 then pitchJitterOffset = pitchJitterRange / 2
-                else pitchJitterOffset = pitchJitterRange end
-            end
-        end
-    else
-        pitchJitterOffset = 0
-    end
-
-    -- Применение YAW к Рутпарту
     local _, yAngle, _ = targetLookCF:ToOrientation()
     local finalYaw = yAngle + yawJitterOffset
     if yawEnabled then finalYaw = finalYaw + math.rad(yawAngle) end
     root.CFrame = CFrame.new(pos) * CFrame.Angles(0, finalYaw, 0)
 end
 
--- ==================== 2. ЛОГИКА PITCH (Перезапись анимаций костей) ====================
-local function antiAimBones()
-    if not antiAimEnabled or not pitchEnabled then return end
-    
-    local player = Players.LocalPlayer
-    local activeChar = player.Character
-    -- Ищем настоящее серверное тело с хайлайтом (оно остается под твоим ником при Fake Lag)
-    local realChar = Workspace:FindFirstChild(player.Name)
-
-    -- Собираем обе модельки в список, чтобы согнуть их синхронно
-    local charsToBend = {}
-    if activeChar then table.insert(charsToBend, activeChar) end
-    if realChar and realChar ~= activeChar then table.insert(charsToBend, realChar) end
-
-    local finalPitchDeg = math.clamp(pitchAngle + pitchJitterOffset, -90, 90)
-    local pRad = math.rad(finalPitchDeg)
-
-    for _, char in ipairs(charsToBend) do
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid.Health > 0 then
-            local neck = char:FindFirstChild("Neck", true)
-            local waist = char:FindFirstChild("Waist", true)
-
-            -- Накладываем наклон на кости каждой найденной модельки
-            if waist then
-                waist.Transform = waist.Transform * CFrame.Angles(pRad, 0, 0)
-            end
-            if neck then
-                neck.Transform = neck.Transform * CFrame.Angles(pRad, 0, 0)
-            end
-        end
-    end
-end
-
--- Основная функция управления состояниями (Вкл/Выкл)
 local function setAntiAimState(state)
     antiAimEnabled = state
     if state then
-        -- RenderStepped для перемещения хитбокса (Yaw)
         if not antiAimRenderConn then
             antiAimRenderConn = RunService.RenderStepped:Connect(antiAimMain)
-        end
-        -- Stepped для модификации костей без конфликта с анимациями (Pitch)
-        if not antiAimSteppedConn then
-            antiAimSteppedConn = RunService.Stepped:Connect(antiAimBones)
         end
     else
         if antiAimRenderConn then 
             antiAimRenderConn:Disconnect()
             antiAimRenderConn = nil 
         end
-        if antiAimSteppedConn then 
-            antiAimSteppedConn:Disconnect()
-            antiAimSteppedConn = nil 
-        end
-        -- Нам больше не нужно принудительно возвращать кости на место.
-        -- Как только мы отключаем Stepped коннект, движок Роблокса моментально
-        -- выпрямляет персонажа в его дефолтную анимацию.
     end
 end
 
--- Глобальная очистка для кнопки Unload Script
 local function unloadAntiAim()
     setAntiAimState(false)
 end
 _G.unloadAntiAim = unloadAntiAim
 
--- ==================== UI ANTI-AIM ====================
 local antiAimSection = RageTab:AddSection({
     Name = "ANTI-AIM",
     Position = 'right'
@@ -640,16 +500,6 @@ antiAimToggle.Option:AddSlider({
     end
 })
 
-antiAimToggle.Option:AddSlider({
-    Name = "Pitch Angle",
-    Default = 0,
-    Min = -90,
-    Max = 90,
-    Rounding = 0,
-    Type = "°",
-    Callback = function(val) pitchAngle = val end
-})
-
 antiAimToggle.Option:AddDropdown({
     Name = "Yaw base",
     Values = {"Static", "At Target", "Spin"},
@@ -659,7 +509,7 @@ antiAimToggle.Option:AddDropdown({
         updateAntiAimMode(modeMap[value] or "static")
     end
 })
--- НАСТРОЙКИ YAW JITTER
+
 local yawJitterToggle = antiAimSection:AddToggle({
     Name = "Yaw jitter",
     Default = false,
@@ -690,292 +540,156 @@ yawJitterToggle.Option:AddDropdown({
     Callback = function(val) yawJitterMode = val end
 })
 
--- НАСТРОЙКИ PITCH JITTER
-local pitchJitterToggle = antiAimSection:AddToggle({
-    Name = "Pitch jitter",
-    Default = false,
-    Option = true,
-    Callback = function(val) pitchJitterEnabled = val end
-})
-pitchJitterToggle.Option:AddSlider({
-    Name = "Range",
-    Default = 30,
-    Min = 1,
-    Max = 90,
-    Type = "°",
-    Callback = function(val) pitchJitterRange = val end
-})
-pitchJitterToggle.Option:AddSlider({
-    Name = "Delay",
-    Default = 0,
-    Min = 0,
-    Max = 500,
-    Rounding = 0,
-    Type = "ms",
-    Callback = function(val) pitchJitterInterval = val / 1000 end
-})
-pitchJitterToggle.Option:AddDropdown({
-    Name = "Mode",
-    Values = {"Center", "3-way", "5-way", "Random"},
-    Default = "Center",
-    Callback = function(val) pitchJitterMode = val end
-})
--- ==================== FAKE LAG (серверная часть – прозрачный силуэт с обводкой) ====================
 local Player = game:GetService("Players").LocalPlayer
 local fakeLagEnabled = false
-local fakeLagLimit = 5            
-local RealChar = nil
-local FakeChar = nil
-local fakeLagConnections = {}
-local fakeLagAnimTracks = {}
-local realLagAnimTracks = {} -- Анимации для серверной модели (с обводкой)
-local updateThread = nil
-local serverHighlight = nil
-local freezeBV = nil
-local originalWalkSpeed = 16
-
-local function GetAnimID(char, name, subName)
-    local animScript = char:FindFirstChild("Animate")
-    if animScript then
-        local value = animScript:FindFirstChild(name)
-        if value then
-            local anim = value:FindFirstChild(subName) or value:FindFirstChildOfClass("Animation")
-            if anim then return anim.AnimationId end
-        end
-    end
-    return nil
-end
-
-local function StopAllAnims()
-    for _, track in pairs(fakeLagAnimTracks) do
-        if track then pcall(function() track:Stop(0.1) end) end
-    end
-    for _, track in pairs(realLagAnimTracks) do
-        if track then pcall(function() track:Stop(0.1) end) end
-    end
-end
+local fakeLagLimit = 5
+local GhostModel = nil
+local tickCounter = 0
+local realSmoothCF = nil
+local laggedCF = nil
+local heartbeatConn = nil
+local fakeLagRestoreBound = false
 
 local function DisableFakeLag()
-    if not fakeLagEnabled then return end
+    if not fakeLagEnabled and not fakeLagRestoreBound then return end
     fakeLagEnabled = false
     
-    for _, conn in pairs(fakeLagConnections) do pcall(function() conn:Disconnect() end) end
-    fakeLagConnections = {}
-    
-    -- Останавливаем наши Action4 анимации, чтобы оригинальный Animate снова заработал
-    StopAllAnims()
-    fakeLagAnimTracks = {}
-    realLagAnimTracks = {}
-    
-    if updateThread then pcall(function() task.cancel(updateThread) end); updateThread = nil end
-    if serverHighlight then pcall(function() serverHighlight:Destroy() end); serverHighlight = nil end
-    if freezeBV then pcall(function() freezeBV:Destroy() end); freezeBV = nil end
-
-    if RealChar and RealChar:FindFirstChild("HumanoidRootPart") then
-        local realHum = RealChar:FindFirstChildOfClass("Humanoid")
-        if realHum then realHum.WalkSpeed = originalWalkSpeed end
-        
-        for _, part in ipairs(RealChar:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if part.Name == "HumanoidRootPart" then
-                    part.Transparency = 1
-                else
-                    part.Transparency = 0
-                end
-                part.CanCollide = true
-            end
-        end
-        
-        local savedCamCF = workspace.CurrentCamera.CFrame
-        Player.Character = RealChar
-        if realHum then workspace.CurrentCamera.CameraSubject = realHum end
-        task.spawn(function()
-            for i = 1, 5 do
-                workspace.CurrentCamera.CFrame = savedCamCF
-                game:GetService("RunService").RenderStepped:Wait()
-            end
-        end)
+    if heartbeatConn then heartbeatConn:Disconnect(); heartbeatConn = nil end
+    if fakeLagRestoreBound then
+        pcall(function() RunService:UnbindFromRenderStep("FakeLagRestore") end)
+        fakeLagRestoreBound = false
     end
     
-    if FakeChar then pcall(function() FakeChar:Destroy() end); FakeChar = nil end
-    RealChar = nil
+    if GhostModel then pcall(function() GhostModel:Destroy() end); GhostModel = nil end
+
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    if root and realSmoothCF then
+        root.CFrame = realSmoothCF
+        pcall(function()
+            root.AssemblyLinearVelocity = Vector3.new()
+            root.AssemblyAngularVelocity = Vector3.new()
+        end)
+    end
+    if hum and hum.Health > 0 then
+        pcall(function() hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics) end)
+    end
+    
+    realSmoothCF = nil
+    laggedCF = nil
+    tickCounter = 0
+end
+
+local function CreateGhost(char)
+    char.Archivable = true
+    local ghost = char:Clone()
+    char.Archivable = false
+    ghost.Name = "LD_Ghost_Clone"
+
+    for _, v in pairs(ghost:GetDescendants()) do
+        if v:IsA("LocalScript") or v:IsA("Script") or v:IsA("Humanoid") or v:IsA("Animator") or v:IsA("AnimationController") then
+            pcall(function() v:Destroy() end)
+        elseif v:IsA("BasePart") then
+            v.Anchored = true
+            v.CanCollide = false
+            v.Massless = true
+            pcall(function() v.CanQuery = false; v.CanTouch = false end)
+            if v.Name == "HumanoidRootPart" then
+                v.Transparency = 1
+            else
+                v.Transparency = 0.7
+            end
+        end
+    end
+
+    local hl = Instance.new("Highlight")
+    hl.FillColor = Color3.fromRGB(255, 255, 255)
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.7
+    hl.OutlineTransparency = 0
+    hl.Parent = ghost
+
+    ghost.Parent = workspace
+    return ghost
+end
+
+local function UpdateGhost(char, targetCF)
+    if not GhostModel then return end
+    
+    pcall(function() GhostModel:PivotTo(targetCF) end)
+    
+    for _, realDesc in ipairs(char:GetDescendants()) do
+        if realDesc:IsA("Motor6D") then
+            local ghostDesc = GhostModel:FindFirstChild(realDesc.Name, true)
+            if ghostDesc and ghostDesc:IsA("Motor6D") then
+                ghostDesc.Transform = realDesc.Transform
+            end
+        end
+    end
 end
 
 local function EnableFakeLag()
-    RealChar = Player.Character
-    if not RealChar or not RealChar:FindFirstChild("HumanoidRootPart") or not RealChar:FindFirstChildOfClass("Humanoid") then return end
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
 
     fakeLagEnabled = true
-    
-    local realHum = RealChar:FindFirstChildOfClass("Humanoid")
-    originalWalkSpeed = realHum.WalkSpeed
-    local savedCamCF = workspace.CurrentCamera.CFrame
-    
-    for _, part in ipairs(RealChar:GetDescendants()) do
-        if part:IsA("BasePart") then
-            if part.Name == "HumanoidRootPart" then part.Transparency = 1 else part.Transparency = 0.7 end
-        end
-    end
-    
-    serverHighlight = Instance.new("Highlight")
-    serverHighlight.Parent = RealChar
-    serverHighlight.FillColor = Color3.fromRGB(255, 255, 255)
-    serverHighlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-    serverHighlight.FillTransparency = 0.7
-    serverHighlight.OutlineTransparency = 0
+    realSmoothCF = root.CFrame
+    laggedCF = root.CFrame
+    tickCounter = 0
 
-    RealChar.Archivable = true
-    FakeChar = RealChar:Clone()
-    FakeChar.Name = "LD_Ghost_Clone"
-    FakeChar.Parent = workspace
-    RealChar.Archivable = false
+    GhostModel = CreateGhost(char)
 
-    for _, v in pairs(FakeChar:GetDescendants()) do
-        if v:IsA("LocalScript") or v:IsA("Script") then pcall(function() v:Destroy() end) end
-    end
-    local cloneHighlight = FakeChar:FindFirstChildOfClass("Highlight")
-    if cloneHighlight then cloneHighlight:Destroy() end
-
-    for _, part in pairs(FakeChar:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.Anchored = false
-            part.CanCollide = false
-            pcall(function() part.CanTouch = false; part.CanQuery = false end)
-            if part.Name == "HumanoidRootPart" then part.Transparency = 1 else part.Transparency = 0 end
-        end
+    if fakeLagRestoreBound then
+        pcall(function() RunService:UnbindFromRenderStep("FakeLagRestore") end)
+        fakeLagRestoreBound = false
     end
 
-    local fakeHum = FakeChar:FindFirstChild("Humanoid")
-    local fakeRoot = FakeChar:FindFirstChild("HumanoidRootPart")
-    
-    -- Загружаем анимации для клона и для сервера
-    if fakeHum and realHum then
-        fakeHum.WalkSpeed = originalWalkSpeed 
-        fakeHum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-        
-        local function Load(hum, id, isPriority)
-            if not id then return nil end
-            local a = Instance.new("Animation") a.AnimationId = id
-            local track = hum:LoadAnimation(a)
-            if isPriority then track.Priority = Enum.AnimationPriority.Action4 end
-            return track
-        end
-
-        local runId = GetAnimID(RealChar, "run", "RunAnim") or GetAnimID(RealChar, "walk", "WalkAnim") or "rbxassetid://180426354"
-        local idleId = GetAnimID(RealChar, "idle", "Animation1") or "rbxassetid://180435571"
-        local jumpId = GetAnimID(RealChar, "jump", "JumpAnim") or "rbxassetid://125750702"
-        local climbId = GetAnimID(RealChar, "climb", "ClimbAnim") or "rbxassetid://180436334"
-
-        -- Анимации клона
-        fakeLagAnimTracks.Run = Load(fakeHum, runId, false)
-        fakeLagAnimTracks.Idle = Load(fakeHum, idleId, false)
-        fakeLagAnimTracks.Jump = Load(fakeHum, jumpId, false)
-        fakeLagAnimTracks.Climb = Load(fakeHum, climbId, false)
-        
-        -- Анимации сервера (перекрывают сломанный Animate, не трогая его)
-        realLagAnimTracks.Run = Load(realHum, runId, true)
-        realLagAnimTracks.Idle = Load(realHum, idleId, true)
-        realLagAnimTracks.Jump = Load(realHum, jumpId, true)
-        realLagAnimTracks.Climb = Load(realHum, climbId, true)
-
-        if fakeLagAnimTracks.Idle then pcall(function() fakeLagAnimTracks.Idle:Play() end) end
-        if realLagAnimTracks.Idle then pcall(function() realLagAnimTracks.Idle:Play() end) end
-    end
-
-    realHum.WalkSpeed = 0 
-    
-    -- Физическая заморозка в воздухе без отключения сетевых апдейтов (Anchored=false)
-    freezeBV = Instance.new("BodyVelocity")
-    freezeBV.Name = "FakeLagFreeze"
-    freezeBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    freezeBV.Velocity = Vector3.new(0, 0, 0)
-    freezeBV.P = 100000
-    freezeBV.Parent = RealChar.HumanoidRootPart
-
-    Player.Character = FakeChar
-    if fakeHum then workspace.CurrentCamera.CameraSubject = fakeHum end
-
-    task.spawn(function()
-        for i = 1, 5 do
-            workspace.CurrentCamera.CFrame = savedCamCF
-            game:GetService("RunService").RenderStepped:Wait()
+    RunService:BindToRenderStep("FakeLagRestore", Enum.RenderPriority.Camera.Value - 1, function()
+        if not fakeLagEnabled then return end
+        local currentChar = Player.Character
+        local currentRoot = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+        if currentRoot and realSmoothCF then
+            currentRoot.CFrame = realSmoothCF
         end
     end)
+    fakeLagRestoreBound = true
 
-    table.insert(fakeLagConnections, game:GetService("UserInputService").JumpRequest:Connect(function()
-        if fakeLagEnabled and fakeHum then pcall(function() fakeHum.Jump = true end) end
-    end))
-
-    table.insert(fakeLagConnections, game:GetService("RunService").Heartbeat:Connect(function()
-        if not fakeLagEnabled or not FakeChar or not RealChar then return end
-        for _, part in ipairs(FakeChar:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-        for _, part in ipairs(RealChar:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-    end))
-
-    -- Управление и синхронизация анимаций
-    table.insert(fakeLagConnections, game:GetService("RunService").RenderStepped:Connect(function()
-        if not fakeLagEnabled or not FakeChar or not fakeHum or not fakeRoot then return end
-        local moveDir = Vector3.new(0,0,0)
-        local camCF = workspace.CurrentCamera.CFrame
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + camCF.LookVector end
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - camCF.LookVector end
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - camCF.RightVector end
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + camCF.RightVector end
-        local finalDir = Vector3.new(moveDir.X, 0, moveDir.Z)
-        fakeHum:Move(finalDir.Magnitude > 0 and finalDir.Unit or Vector3.new(0,0,0), false)
-
-        local velocity = fakeRoot.Velocity
-        local speed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
-        local isClimbing = fakeHum:GetState() == Enum.HumanoidStateType.Climbing
+    heartbeatConn = RunService.Heartbeat:Connect(function()
+        if not fakeLagEnabled then return end
+        local currentChar = Player.Character
+        local currentRoot = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+        local hum = currentChar and currentChar:FindFirstChild("Humanoid")
         
-        -- Синхронный запуск анимаций для клона и сервера
-        if isClimbing then
-            if fakeLagAnimTracks.Climb and not fakeLagAnimTracks.Climb.IsPlaying then
-                StopAllAnims()
-                pcall(function() fakeLagAnimTracks.Climb:Play() end)
-                pcall(function() realLagAnimTracks.Climb:Play() end)
-            end
-        elseif velocity.Y > 5 then
-            if fakeLagAnimTracks.Jump and not fakeLagAnimTracks.Jump.IsPlaying then
-                StopAllAnims()
-                pcall(function() fakeLagAnimTracks.Jump:Play() end)
-                pcall(function() realLagAnimTracks.Jump:Play() end)
-            end
-        elseif speed > 0.5 then
-            if fakeLagAnimTracks.Run and not fakeLagAnimTracks.Run.IsPlaying then
-                StopAllAnims()
-                pcall(function() fakeLagAnimTracks.Run:Play() end)
-                pcall(function() realLagAnimTracks.Run:Play() end)
-            end
-        else
-            if fakeLagAnimTracks.Idle and not fakeLagAnimTracks.Idle.IsPlaying then
-                StopAllAnims()
-                pcall(function() fakeLagAnimTracks.Idle:Play() end)
-                pcall(function() realLagAnimTracks.Idle:Play() end)
-            end
+        if not currentRoot or not hum or hum.Health <= 0 then
+            DisableFakeLag()
+            return
         end
-    end))
 
-    local function updateRealChar()
-        while fakeLagEnabled do
-            task.wait(fakeLagLimit * (1.5 / 14))
-            if fakeLagEnabled and RealChar and RealChar:FindFirstChild("HumanoidRootPart") and FakeChar and FakeChar:FindFirstChild("HumanoidRootPart") then
-                -- Телепортация серверной модели к клону (freezeBV удержит её в воздухе между тиками)
-                RealChar.HumanoidRootPart.CFrame = FakeChar.HumanoidRootPart.CFrame
-                RealChar.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
-            end
+        realSmoothCF = currentRoot.CFrame
+
+        tickCounter = tickCounter + 1
+        if tickCounter >= fakeLagLimit then
+            tickCounter = 0
+            laggedCF = realSmoothCF
+            UpdateGhost(currentChar, laggedCF)
         end
-    end
 
-    if updateThread then task.cancel(updateThread) end
-    updateThread = task.spawn(updateRealChar)
+        local state = hum:GetState()
+        local onGround = hum.FloorMaterial ~= Enum.Material.Air
+        local canLag = laggedCF and onGround and state ~= Enum.HumanoidStateType.PlatformStanding
+            and state ~= Enum.HumanoidStateType.Jumping and state ~= Enum.HumanoidStateType.Freefall
+        if canLag then
+            local oldVel = currentRoot.AssemblyLinearVelocity
+            local oldAngVel = currentRoot.AssemblyAngularVelocity
+            currentRoot.CFrame = laggedCF
+            currentRoot.AssemblyLinearVelocity = oldVel
+            currentRoot.AssemblyAngularVelocity = oldAngVel
+        end
+    end)
 end
 
--- UI
 local fakeLagSection = RageTab:AddSection({
     Name = "FAKE LAG",
     Position = 'right'
@@ -996,10 +710,10 @@ fakeLagToggle.Option:AddSlider({
     Min = 1,
     Max = 14,
     Rounding = 0,
-    Type = "",
+    Type = "ticks",
     Callback = function(val) fakeLagLimit = val end
 })
--- ==================== ESP ====================
+
 local ESP = {
     Enabled = false,
     TeamCheck = false,
@@ -1027,13 +741,12 @@ local ESP = {
     ChamsTransparency = 0.5,
     EnemyColor = Color3.fromRGB(255, 255, 255),
     AllyColor = Color3.fromRGB(255, 255, 255),
-    HealthColor = Color3.fromRGB(0, 255, 0)
+    HealthColor = Color3.fromRGB(0, 255, 0),
 }
 
 local Drawings = { ESP = {} }
 local Highlights = {}
 
--- Проверка видимости цели
 local function isVisible(character)
     local targetPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Head")
     if not targetPart then return false end
@@ -1124,7 +837,7 @@ local function createESP(player)
         Tracer = tracer,
         HealthBar = healthBar,
         Info = info,
-        Snapline = snapline
+        Snapline = snapline,
     }
 end
 
@@ -1192,7 +905,6 @@ local function updateESP(player)
     local pos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
     local distance = (rootPart.Position - Camera.CFrame.Position).Magnitude
 
-    -- Проверка видимости и дистанции
     local shouldHide = not onScreen or distance > ESP.MaxDistance
     if shouldHide then
         for _, obj in pairs(esp.Box) do obj.Visible = false end
@@ -1205,7 +917,6 @@ local function updateESP(player)
         return
     end
 
-    -- Team Check
     if ESP.TeamCheck and player.Team == LocalPlayer.Team and not ESP.ShowTeam then
         for _, obj in pairs(esp.Box) do obj.Visible = false end
         esp.Tracer.Visible = false
@@ -1362,13 +1073,11 @@ local function updateESP(player)
     end
 end
 
--- ==================== WORLD ====================
 local worldSection = VisualTab:AddSection({
     Name = "WORLD",
     Position = 'right'
 })
 
--- Motion Blur
 local motionBlurEnabled = false
 local blurAmount = 15
 local blurAmplifier = 5
@@ -1417,7 +1126,6 @@ local motionBlurToggle = worldSection:AddToggle({
 motionBlurToggle.Option:AddSlider({ Name = "Blur Amount", Default = 15, Min = 0, Max = 50, Rounding = 0, Callback = function(val) blurAmount = val end })
 motionBlurToggle.Option:AddSlider({ Name = "Blur Amplifier", Default = 5, Min = 1, Max = 20, Rounding = 0, Callback = function(val) blurAmplifier = val end })
 
--- Custom Fog
 local originalFog = { Color = Lighting.FogColor, Start = Lighting.FogStart, End = Lighting.FogEnd }
 local fogEnabled = false
 local fogStart = 0
@@ -1446,10 +1154,9 @@ fogToggle.Option:AddSlider({ Name = "Start Distance", Default = 0, Min = 0, Max 
 fogToggle.Option:AddSlider({ Name = "End Distance", Default = 100, Min = 1, Max = 1000, Rounding = 0, Type = "studs", Callback = function(val) fogEnd = val; if fogEnabled then applyFog() end end })
 fogToggle.Option:AddColorPicker({ Name = "Fog Color", Default = fogColor, Callback = function(val) fogColor = val; if fogEnabled then applyFog() end end })
 
--- World Colors
 local worldColorsEnabled = false
 local originalAmbient = Lighting.Ambient
-local worldAmbient = Color3.fromRGB(255, 255, 255)  -- белый по умолчанию
+local worldAmbient = Color3.fromRGB(255, 255, 255)
 
 local function applyWorldColors()
     if worldColorsEnabled then
@@ -1478,7 +1185,6 @@ worldColorsToggle.Option:AddColorPicker({
     end
 })
 
--- ==================== ESP LOOP ====================
 local function espLoop()
     if not ESP.Enabled then
         for _, player in ipairs(Players:GetPlayers()) do
@@ -1514,7 +1220,7 @@ local espConnection = RunService.RenderStepped:Connect(espLoop)
 
 Players.PlayerAdded:Connect(createESP)
 Players.PlayerRemoving:Connect(removeESP)
--- ==================== WATERMARK ====================
+
 local watermarkGui = Instance.new("ScreenGui")
 watermarkGui.Name = "FatalityWatermark"
 watermarkGui.Parent = CoreGui
@@ -1756,7 +1462,7 @@ local function cleanupWatermark()
     if frameCounterConnection then frameCounterConnection:Disconnect(); frameCounterConnection = nil end
     if watermarkGui then watermarkGui:Destroy() end
 end
--- ==================== VISUAL UI ====================
+
 local espSection = VisualTab:AddSection({
     Name = "ESP",
     Position = 'left'
@@ -1806,13 +1512,11 @@ chamsToggle.Option:AddColorPicker({ Name = "Visible Color", Default = ESP.ChamsV
 chamsToggle.Option:AddColorPicker({ Name = "Invisible Color", Default = ESP.ChamsInvisibleColor, Callback = function(color) ESP.ChamsInvisibleColor = color end })
 chamsToggle.Option:AddSlider({ Name = "Fill Transparency", Min = 0, Max = 10, Default = 5, Round = 0, Type = "", Callback = function(val) ESP.ChamsTransparency = val / 10 end })
 
--- ==================== UI SECTION ====================
 local uiSection = Misc:AddSection({
     Name = "UI",
     Position = 'left'
 })
 
--- Watermark
 local watermarkMainToggle = uiSection:AddToggle({
     Name = "Show Watermark",
     Default = false,
@@ -1828,12 +1532,12 @@ watermarkMainToggle.Option:AddToggle({ Name = "Show Ping", Default = true, Callb
 watermarkMainToggle.Option:AddToggle({ Name = "Show FPS", Default = true, Callback = function(val) showFPS = val; refreshWatermark() end })
 watermarkMainToggle.Option:AddToggle({ Name = "Show Time", Default = true, Callback = function(val) showTime = val; refreshWatermark() end })
 watermarkMainToggle.Option:AddToggle({ Name = "Show Username", Default = true, Callback = function(val) showUsername = val; refreshWatermark() end })
--- ==================== MOVEMENT ====================
+
 local movementSection = Misc:AddSection({
     Name = "MOVEMENT",
     Position = 'center'
 })
--- Strafe
+
 local strafeEnabled = false
 local strafeSpeed = 35
 local strafeBodyVelocity = nil
@@ -1882,31 +1586,28 @@ end
 local strafeToggle = movementSection:AddToggle({ Name = "Air Strafe", Default = false, Option = true, Callback = function(val) setStrafeState(val) end })
 strafeToggle.Option:AddSlider({ Name = "Speed", Min = 10, Max = 120, Default = 35, Round = 1, Type = "studs/s", Callback = function(val) strafeSpeed = val end })
 
--- ==================== LUA ====================
 local luaSection = LuaTab:AddSection({
     Name = "SCRIPTS",
     Position = 'left'
 })
 luaSection:AddButton({
     Name = "Load Infinite Yield",
-    Description = "Загрузить админ-скрипт Infinite Yield",
+    Description = "Load admin script Infinite Yield",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
     end
 })
--- ==================== СЕКЦИЯ НАСТРОЕК СКРИПТА (Вкладка MISC) ====================
+
 local ScriptSettingsSection = Misc:AddSection({
     Name = "UNLOAD",
-    Position = 'right' -- Можно поменять на 'right', если слева уже занято
+    Position = 'right'
 })
 
--- ==================== КНОПКА ПОЛНОЙ И БЕЗОПАСНОЙ ВЫГРУЗКИ ====================
 ScriptSettingsSection:AddButton({
     Name = "Unload Script",
     Callback = function()
-        print("[Fatality] Инициализация полной выгрузки...")
+        print("[Fatality] Initializing full unload...")
         
-        -- ГАРАНТИРОВАННОЕ УДАЛЕНИЕ ИНТЕРФЕЙСА (в отдельном потоке)
         task.spawn(function()
             local function nukeUI(container)
                 if not container then return end
@@ -1914,12 +1615,10 @@ ScriptSettingsSection:AddButton({
                     if gui:IsA("ScreenGui") then
                         local isTarget = false
                         
-                        -- Проверка по имени
                         if gui.Name:lower():find("fatality") then 
                             isTarget = true 
                         end
                         
-                        -- Глубокая проверка по тексту (если имя зашифровано библиотекой)
                         if not isTarget then
                             pcall(function()
                                 for _, desc in ipairs(gui:GetDescendants()) do
@@ -1934,7 +1633,6 @@ ScriptSettingsSection:AddButton({
                             end)
                         end
                         
-                        -- Уничтожаем найденный интерфейс
                         if isTarget then
                             pcall(function()
                                 gui.Enabled = false
@@ -1945,24 +1643,18 @@ ScriptSettingsSection:AddButton({
                 end
             end
 
-            -- Сканируем все папки
             pcall(function() nukeUI(game:GetService("CoreGui")) end)
             pcall(function() nukeUI(game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui")) end)
             if gethui then pcall(function() nukeUI(gethui()) end) end
             
-            print("[Fatality] Интерфейс успешно уничтожен!")
+            print("[Fatality] interface unloaded")
         end)
 
-        -- ОСТАНОВКА ВСЕХ ФУНКЦИЙ И ОЧИСТКА ОКРУЖЕНИЯ
         pcall(function()
-            -- Выключаем Fake Lag
             if DisableFakeLag then DisableFakeLag() end
-            -- Отключаем глобальный тумблер ESP, если он есть в скрипте
             if ESP then ESP.Enabled = false end
             if espConnection then espConnection:Disconnect() end
             
-            -- ТОТАЛЬНАЯ ЗАЧИСТКА ESP (Тексты, Имена, Здоровье, Боксы)
-            -- Очищаем 2D-элементы из CoreGui и PlayerGui
             local function clearVisuals(folder)
                 if not folder then return end
                 for _, obj in ipairs(folder:GetChildren()) do
@@ -1975,15 +1667,12 @@ ScriptSettingsSection:AddButton({
             pcall(function() clearVisuals(game:GetService("CoreGui")) end)
             pcall(function() clearVisuals(game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui")) end)
 
-            -- Очищаем 3D-элементы (BillboardGui, чистящие Name/Health/Box) внутри персонажей игроков
             for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
                 if player.Character then
                     for _, obj in ipairs(player.Character:GetDescendants()) do
-                        -- Удаляем Chams (Подсветку)
                         if obj:IsA("Highlight") or obj.Name == "Chams" or obj.Name:find("Highlight") then
                             pcall(function() obj:Destroy() end)
                         end
-                        -- Удаляем BillboardGui, внутри которых рендерятся Name, Health, HealthBar и Box
                         if obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
                             local objName = obj.Name:lower()
                             if objName:find("esp") or objName:find("name") or objName:find("health") or objName:find("box") or objName:find("tag") then
@@ -1994,22 +1683,19 @@ ScriptSettingsSection:AddButton({
                 end
             end
 
-            -- Очищаем клон-силуэты фейклага из workspace
             for _, hl in pairs(workspace:GetDescendants()) do
                 if (hl:IsA("Highlight") and hl.Name == "LD_Ghost_Clone") or hl.Name == "LD_Ghost_Clone" then
                     pcall(function() hl:Destroy() end)
                 end
             end
 
-            -- УДАЛЕНИЕ MOTION BLUR И ВОССТАНОВЛЕНИЕ ГРАФИКИ
             local Lighting = game:GetService("Lighting")
             local Camera = workspace.CurrentCamera
             
-            -- Функция удаления эффектов размытия и кастомных фильтров
             local function removeBlurFrom(container)
                 if not container then return end
                 for _, obj in ipairs(container:GetChildren()) do
-                    if obj:IsA("BlurEffect") or obj:IsA("MotionBlur") or obj.Name:lower():find("blur") or objName == "motionblur" then
+                    if obj:IsA("BlurEffect") or obj:IsA("MotionBlur") or obj.Name:lower():find("blur") or obj.Name == "motionblur" then
                         pcall(function() obj:Destroy() end)
                     end
                     if obj:IsA("Sky") or obj:IsA("ColorCorrectionEffect") or obj:IsA("Atmosphere") or obj.Name:find("Custom") then
@@ -2021,7 +1707,6 @@ ScriptSettingsSection:AddButton({
             removeBlurFrom(Lighting)
             removeBlurFrom(Camera)
 
-            -- Сброс стандартных параметров освещения игры
             Lighting.Ambient = Color3.fromRGB(128, 128, 128)
             Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
             Lighting.FogColor = Color3.fromRGB(192, 192, 192)
@@ -2029,35 +1714,29 @@ ScriptSettingsSection:AddButton({
             Lighting.FogEnd = 100000
             Lighting.ClockTime = 14
 
-            -- ОТКЛЮЧЕНИЕ СТРАФОВ И ДВИЖЕНИЯ (Strafe)
             if strafeConnection then strafeConnection:Disconnect() end
             if _G.DisableStrafe then pcall(_G.DisableStrafe) end
             
-            -- Сбрасываем кастомные параметры ходьбы персонажа, которые мог изменить Strafe
             local LocalPlayer = game:GetService("Players").LocalPlayer
             if LocalPlayer and LocalPlayer.Character then
                 local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
                 if hum then
-                    hum.AutoRotate = true -- Возвращаем авто-поворот тела за камерой
+                    hum.AutoRotate = true
                 end
             end
 
-            -- Выключаем Anti-Aim и полностью выпрямляем спину
             if _G.unloadAntiAim then _G.unloadAntiAim() end
             
-            -- Выключаем Aimlock
             if _G.unloadAIM then _G.unloadAIM() end
             
-            -- Выключаем ватермарку
             if cleanupWatermark then cleanupWatermark() end
         end)
 
-        -- ОЧИСТКА ПАМЯТИ
         Window = nil
         Fatality = nil
     end
 })
--- ==================== INFO BUTTON ====================
+
 Window:AddInfo(function()
     Notification:Notify({
         Title = "Fatality",
@@ -2066,7 +1745,6 @@ Window:AddInfo(function()
         Icon = "info"
     })
 end)
--- ==================== INIT ====================
 
 Notification:Notify({
     Title = "Fatality.win",
